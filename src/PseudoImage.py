@@ -1,6 +1,6 @@
 import logging
 import os
-from typing import Optional, Tuple
+from typing import Optional
 
 import cv2
 import numpy as np
@@ -22,7 +22,7 @@ class PseudoImage:
 
     def __call__(
         self, filename: str, target_channel: int = 0
-    ) -> Optional[Tuple[npt.NDArray[np.uint8], npt.NDArray[np.uint8]]]:
+    ) -> Optional[tuple[npt.NDArray[np.uint8], npt.NDArray[np.uint8]]]:
 
         src_path = os.path.join(self.image_root, filename)
         logging.info(f"load path: {src_path}")
