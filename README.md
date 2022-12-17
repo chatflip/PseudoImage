@@ -10,11 +10,10 @@
 ## Installation
 
 ```bash
-poetry install
+poetry install --no-dev
 ```
 
 ## Usage
 
-```bash
-bash script
-```
+1. Move image to the images folder
+2. python src/main.py 

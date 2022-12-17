@@ -104,7 +104,7 @@ venv.bak/
 .mypy_cache/
 
 # ignore image
-*.jpg
-*.jpeg
-*.png
-*.bmp
+images/*.jpg
+images/*.jpeg
+images/*.png
+images/*.bmp
