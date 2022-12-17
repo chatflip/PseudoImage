@@ -2,15 +2,21 @@ import os
 
 import cv2
 import numpy as np
+import numpy.typing as npt
 
 
 class PseudoImage:
-    def __init__(self, image_scale=30, font=cv2.FONT_HERSHEY_SIMPLEX, font_scale=0.4):
+    def __init__(
+        self,
+        image_scale: int = 30,
+        font: int = cv2.FONT_HERSHEY_SIMPLEX,
+        font_scale: float = 0.4,
+    ):
         self.image_scale = image_scale
         self.font = font
         self.font_scale = font_scale
 
-    def __call__(self, src_path):
+    def __call__(self, src_path: str) -> None:
         target_channel = 0
 
         print(f"load path: {src_path}")
@@ -28,7 +34,9 @@ class PseudoImage:
         cv2.imwrite(dst_path, pseudol_image)
         print(f"save path: {dst_path}")
 
-    def make_pseudol(self, image, target_channel):
+    def make_pseudol(
+        self, image: npt.NDArray[np.uint8], target_channel: int
+    ) -> npt.NDArray[np.uint8]:
         height, width, channel = image.shape
         pseudol_size = (height * self.image_scale, width * self.image_scale, 1)
         pseudol_image = np.zeros((pseudol_size), dtype=np.uint8)

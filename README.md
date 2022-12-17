@@ -4,7 +4,8 @@
 
 ## Requirement
 
-- poetry>=1.1
+- Python >= 3.8
+- Poetry >= 1.2
 
 ## Installation
 
