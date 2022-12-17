@@ -1,27 +1,10 @@
 import argparse
-<<<<<<< HEAD
-from PseudoImage import PseudoImage
-
-
-def config():
-    
-
-def main() -> None:
-    image_path = "image.jpg"
-    pseudo_image_maker = PseudoImage(image_scale=30)
-    pseudo_image_maker(image_path)
-
-
-if __name__ == "__main__":
-    
-    main()
-=======
 import logging
 
 from PseudoImage import PseudoImage
 
 
-def main(args):
+def main(args: argparse.Namespace) -> None:
     log_level = getattr(logging, args.log_level)
     logging.basicConfig(level=log_level)
 
@@ -48,5 +31,5 @@ if __name__ == "__main__":
     parser.add_argument("--font_scale", default=0.4, type=float)
     parser.add_argument("--image_root", default="images", type=str)
     args = parser.parse_args()
+    print(type(args))
     main(args)
->>>>>>> 71e4fcd941cff16c8cca2e9280566c440d376c8b

@@ -1,10 +1,10 @@
 import logging
 import os
+from typing import Optional, Tuple
 
 import cv2
 import numpy as np
 import numpy.typing as npt
-from typing import Tuple
 
 
 class PseudoImage:
@@ -12,7 +12,7 @@ class PseudoImage:
         self,
         image_scale: int = 30,
         font_str: str = "FONT_HERSHEY_SIMPLEX",
-        font_scale: float=0.4,
+        font_scale: float = 0.4,
         image_root: str = "images",
     ):
         self.image_scale = image_scale
@@ -20,13 +20,15 @@ class PseudoImage:
         self.image_root = image_root
         self.font = getattr(cv2, font_str)
 
+    def __call__(
+        self, filename: str, target_channel: int = 0
+    ) -> Optional[Tuple[npt.NDArray[np.uint8], npt.NDArray[np.uint8]]]:
 
-    def __call__(self, filename: str, target_channel: int = 0) -> Tuple(npt.NDArray[np.uint8], npt.NDArray[np.uint8]):
         src_path = os.path.join(self.image_root, filename)
         logging.info(f"load path: {src_path}")
         if not os.path.exists(src_path):
             logging.error(f"no such file: {src_path}")
-            return
+            return None
         name, _ = os.path.splitext(filename)
         dst_path = os.path.join(self.image_root, f"{name}_pseudo.png")
         image = cv2.imread(src_path, cv2.IMREAD_ANYCOLOR)
@@ -38,7 +40,9 @@ class PseudoImage:
         cv2.imwrite(dst_path, pseudol_image)
         return image, pseudol_image
 
-    def make_pseudol(self, image: npt.NDArray[np.uint8], target_channel: int) -> npt.NDArray[np.uint8]:
+    def make_pseudol(
+        self, image: npt.NDArray[np.uint8], target_channel: int
+    ) -> npt.NDArray[np.uint8]:
         height, width, _ = image.shape
         pseudol_shape = (self.image_scale * height, self.image_scale * width)
         pseudol_image = np.zeros(pseudol_shape, dtype=np.uint8)
