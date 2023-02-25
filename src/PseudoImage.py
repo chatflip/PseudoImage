@@ -1,6 +1,7 @@
+from __future__ import annotations
+
 import logging
 import os
-from typing import Optional
 
 import cv2
 import numpy as np
@@ -13,32 +14,32 @@ class PseudoImage:
         image_scale: int = 30,
         font_str: str = "FONT_HERSHEY_SIMPLEX",
         font_scale: float = 0.4,
-        image_root: str = "images",
     ):
         self.image_scale = image_scale
         self.font_scale = font_scale
-        self.image_root = image_root
         self.font = getattr(cv2, font_str)
 
     def __call__(
-        self, filename: str, target_channel: int = 0
-    ) -> Optional[tuple[npt.NDArray[np.uint8], npt.NDArray[np.uint8]]]:
+        self, src_path: str, target_channel: int = 0
+    ) -> npt.NDArray[np.uint8] | None:
+        """Loads an image with the given filename, generates a pseudocolor image, and saves it.
 
-        src_path = os.path.join(self.image_root, filename)
-        logging.info(f"load path: {src_path}")
+        Args:
+            filename (str): _description_
+            target_channel (int, optional): _description_. Defaults to 0.
+
+        Returns:
+            Optional[tuple[npt.NDArray[np.uint8], npt.NDArray[np.uint8]]]: オリジナル画像と疑似カラー画像のペア。ファイルが存在しない場合はNoneを返します。
+        """
+        logging.info(f"Load path: {src_path}")
         if not os.path.exists(src_path):
-            logging.error(f"no such file: {src_path}")
+            logging.error(f"No such file: {src_path}")
             return None
-        name, _ = os.path.splitext(filename)
-        dst_path = os.path.join(self.image_root, f"{name}_pseudo.png")
         image = cv2.imread(src_path, cv2.IMREAD_ANYCOLOR)
         logging.debug(f"src image shape: {image.shape}")
-
         pseudol_image = self.make_pseudol(image, target_channel)
-        logging.info(f"dst path: {dst_path}")
         logging.debug(f"dst image shape: {pseudol_image.shape}")
-        cv2.imwrite(dst_path, pseudol_image)
-        return image, pseudol_image
+        return pseudol_image
 
     def make_pseudol(
         self, image: npt.NDArray[np.uint8], target_channel: int
