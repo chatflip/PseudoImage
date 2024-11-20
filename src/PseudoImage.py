@@ -91,5 +91,5 @@ class PseudoImage:
                     put_color,
                     1,
                     cv2.LINE_AA,
-                )
+                )  # type: ignore[call-overload]
         return pseudol_image
