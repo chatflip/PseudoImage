@@ -9,12 +9,24 @@ import numpy.typing as npt
 
 
 class PseudoImage:
+    """Generates a pseudocolor image from a grayscale image."""
+
     def __init__(
         self,
         image_scale: int = 30,
         font_str: str = "FONT_HERSHEY_SIMPLEX",
         font_scale: float = 0.4,
     ):
+        """Initializes the PseudoImage class.
+
+        Args:
+            image_scale (int, optional): The scale of the generated image.
+                Defaults to 30.
+            font_str (str, optional): The font type for the text.
+                Defaults to "FONT_HERSHEY_SIMPLEX".
+            font_scale (float, optional): The scale of the text.
+                Defaults to 0.4.
+        """
         self.image_scale = image_scale
         self.font_scale = font_scale
         self.font = getattr(cv2, font_str)
@@ -22,14 +34,16 @@ class PseudoImage:
     def __call__(
         self, src_path: str, target_channel: int = 0
     ) -> npt.NDArray[np.uint8] | None:
-        """Loads an image with the given filename, generates a pseudocolor image, and saves it.
+        """Generates a pseudocolor image from a grayscale image.
 
         Args:
-            filename (str): _description_
-            target_channel (int, optional): _description_. Defaults to 0.
+            src_path (str): The path to the source image.
+            target_channel (int, optional):
+                The channel to use for the pseudocolor image.
+                Defaults to 0.
 
         Returns:
-            Optional[tuple[npt.NDArray[np.uint8], npt.NDArray[np.uint8]]]: オリジナル画像と疑似カラー画像のペア。ファイルが存在しない場合はNoneを返します。
+            npt.NDArray[np.uint8] | None: The pseudocolor image.
         """
         logging.info(f"Load path: {src_path}")
         if not os.path.exists(src_path):
@@ -44,6 +58,15 @@ class PseudoImage:
     def make_pseudol(
         self, image: npt.NDArray[np.uint8], target_channel: int
     ) -> npt.NDArray[np.uint8]:
+        """Generates a pseudocolor image from a grayscale image.
+
+        Args:
+            image (npt.NDArray[np.uint8]): The source image.
+            target_channel (int): The channel to use for the pseudocolor image.
+
+        Returns:
+            npt.NDArray[np.uint8]: The pseudocolor image.
+        """
         height, width, _ = image.shape
         pseudol_shape = (self.image_scale * height, self.image_scale * width)
         pseudol_image = np.zeros(pseudol_shape, dtype=np.uint8)
@@ -68,5 +91,5 @@ class PseudoImage:
                     put_color,
                     1,
                     cv2.LINE_AA,
-                )
+                )  # type: ignore[call-overload]
         return pseudol_image
