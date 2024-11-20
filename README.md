@@ -5,7 +5,7 @@
 ## Requirement
 
 - Python >= 3.9
-- Poetry >= 1.2
+- Poetry >= 1.8
 
 ## Installation
 
