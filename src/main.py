@@ -5,6 +5,11 @@ from PseudoImage import PseudoImage
 
 
 def main(args: argparse.Namespace) -> None:
+    """Run pseudo image generation with the given arguments.
+
+    Args:
+        args: Parsed command-line arguments.
+    """
     log_level = getattr(logging, args.log_level)
     logging.basicConfig(level=log_level)
 

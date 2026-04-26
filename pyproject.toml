@@ -2,68 +2,112 @@
 name = "pseudoimage"
 version = "0.0.0"
 description = ""
-requires-python = "3.10"
+readme = "README.md"
+requires-python = ">=3.13"
 dependencies = [
     "opencv-python>=4.6.0",
 ]
-authors = [{ name = "chatflip", email = "oo.chat.flip@gmail.com" }]
 
 [dependency-groups]
 dev = [
-    "pysen>=0.10",
-    "black==21.10b0",
-    "flake8==4.0.1",
-    "isort==5.10.1",
-    "mypy==0.910",
-    "click==8.0.2",
+    "pre-commit",
 ]
 
+lint = [
+    "ruff",
+    "ty",
+]
+
+test = [
+    "pytest",
+    "pytest-cov",
+] 
+
+
 [tool.uv]
-package = false
+default-groups = []
+exclude-newer = "1 week"
 
-[tool.pysen]
-version = "0.10"
+[tool.ruff]
+target-version = "py313"
+line-length = 88
+exclude = [
+    ".bzr",
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".git-rewrite",
+    ".hg",
+    ".nox",
+    ".pants.d",
+    ".pytype",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    ".venv",
+    "__pypackages__",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "node_modules",
+    "venv",
+]
 
-[tool.pysen.lint]
-enable_black = true
-enable_flake8 = true
-enable_isort = true
-enable_mypy = true
-mypy_preset = "very_strict"
-line_length = 88
-py_version = "py39"
-[[tool.pysen.lint.mypy_targets]]
-paths = ["src/"]
+[tool.ruff.lint]
+select = [
+    "C", # flake8-comprehensions / mccabe
+    "E", # pycodestyle errors
+    "F", # Pyflakes
+    "I", # isort
+    "W", # pycodestyle warnings
+    "D", # pydocstyle
+]
+ignore = [
+    "D100", # Missing docstring in public package
+]
+extend-select = []
 
-[tool.pysen.lint.source]
-include_globs = ["src/**/*.py"]
+# Allow fix for all enabled rules (when `--fix`) is provided.
+fixable = ["ALL"]
+unfixable = ["B"]
 
-[tool.isort]
-target-version = ["py39"]
-profile = "black"
-line_length = 88
+[tool.ruff.lint.pydocstyle]
+convention = "google"
 
-[tool.mypy]
-python_version = 3.9
-# following setting is same as pysen
-# https://github.com/pfnet/pysen/blob/main/setup.cfg#L12
-check_untyped_defs = true
-disallow_any_decorated = false
-disallow_any_generics = false
-disallow_any_unimported = false
-disallow_incomplete_defs = true
-disallow_subclassing_any = true
-disallow_untyped_calls = true
-disallow_untyped_decorators = false
-disallow_untyped_defs = true
-ignore_errors = false
-ignore_missing_imports = true
-no_implicit_optional = true
-show_error_codes = true
-strict_equality = true
-strict_optional = true
-warn_redundant_casts = true
-warn_return_any = true
-warn_unreachable = true
-warn_unused_configs = true
-warn_unused_ignores = true
+[tool.ty.src]
+include = ["src", "tests"]
+
+[tool.ty.terminal]
+error-on-warning = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = [
+    "--cov=src",
+    "--cov-report=xml",
+    "--verbose",
+]
+
+[tool.coverage.run]
+branch = true
+source = ["src/"]
+
+[tool.coverage.report]
+show_missing = true
+fail_under = 80
+omit = ["tests/*"]
+
+[tool.coverage.html]
+directory = "htmlcov"
+
+[tool.markdown.lint]
+default = true
+MD004 = false    # ul-style - Unordered list style
+MD007.indent = 2 # ul-indent - Unordered list indentation
+MD013 = false    # line-length - Line length
+MD029 = false    # ol-prefix - Ordered list item prefix
+MD033 = false    # no-inline-html Inline HTML
+MD041 = false    # first-line-heading/first-line-h1
+MD046 = false    # indented-code-blocks
+MD059 = false    # descriptive-link-text

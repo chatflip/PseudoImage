@@ -1,6 +1,6 @@
 import logging
 import os
-from typing import Optional
+from typing import Optional, cast
 
 import cv2
 import numpy as np
@@ -8,6 +8,8 @@ import numpy.typing as npt
 
 
 class PseudoImage:
+    """Converts an image to a pseudo-color image with pixel values as text."""
+
     def __init__(
         self,
         image_scale: int = 30,
@@ -15,6 +17,14 @@ class PseudoImage:
         font_scale: float = 0.4,
         image_root: str = "images",
     ):
+        """Initialize PseudoImage.
+
+        Args:
+            image_scale: Scale factor for the output image.
+            font_str: OpenCV font attribute name.
+            font_scale: Font scale for text rendering.
+            image_root: Root directory for images.
+        """
         self.image_scale = image_scale
         self.font_scale = font_scale
         self.image_root = image_root
@@ -23,7 +33,15 @@ class PseudoImage:
     def __call__(
         self, filename: str, target_channel: int = 0
     ) -> Optional[tuple[npt.NDArray[np.uint8], npt.NDArray[np.uint8]]]:
+        """Process an image file and generate its pseudo-color version.
 
+        Args:
+            filename: Name of the image file to process.
+            target_channel: Color channel index to use for brightness.
+
+        Returns:
+            Tuple of (original image, pseudo image), or None if file not found.
+        """
         src_path = os.path.join(self.image_root, filename)
         logging.info(f"load path: {src_path}")
         if not os.path.exists(src_path):
@@ -31,7 +49,11 @@ class PseudoImage:
             return None
         name, _ = os.path.splitext(filename)
         dst_path = os.path.join(self.image_root, f"{name}_pseudo.png")
-        image = cv2.imread(src_path, cv2.IMREAD_ANYCOLOR)
+        raw = cv2.imread(src_path, cv2.IMREAD_ANYCOLOR)
+        if raw is None:
+            logging.error(f"failed to read image: {src_path}")
+            return None
+        image = cast(npt.NDArray[np.uint8], raw)
         logging.debug(f"src image shape: {image.shape}")
 
         pseudol_image = self.make_pseudol(image, target_channel)
@@ -43,6 +65,15 @@ class PseudoImage:
     def make_pseudol(
         self, image: npt.NDArray[np.uint8], target_channel: int
     ) -> npt.NDArray[np.uint8]:
+        """Generate a pseudo-color image with pixel brightness values as text.
+
+        Args:
+            image: Input image array.
+            target_channel: Color channel index to use for brightness.
+
+        Returns:
+            Pseudo-color image with pixel values rendered as text.
+        """
         height, width, _ = image.shape
         pseudol_shape = (self.image_scale * height, self.image_scale * width)
         pseudol_image = np.zeros(pseudol_shape, dtype=np.uint8)
