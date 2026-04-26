@@ -1,42 +1,42 @@
 import argparse
-import logging
+import sys
+from pathlib import Path
 
-import cv2
+from loguru import logger
 
-from .PseudoImage import PseudoImage
+from PseudoImage import PseudoImage
 
 
-def config() -> argparse.Namespace:
-    """Set the arguments for the main function.
+def main(args: argparse.Namespace) -> None:
+    """Run pseudo image generation with the given arguments.
 
-    Returns:
-        argparse.Namespace: The arguments for the main function.
+    Args:
+        args: Parsed command-line arguments.
     """
+    logger.remove()
+    logger.add(sys.stderr, level=args.log_level)
+
+    pseudo_image_maker = PseudoImage(
+        args.image_scale,
+        args.font,
+        args.font_scale,
+        Path(args.image_root),
+    )
+    pseudo_image_maker(args.image_path)
+
+
+if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--src_path", default="images/sample.jpg", type=str)
-    parser.add_argument("--dst_path", default="images/image_pseudo.png", type=str)
+    parser.add_argument("--image_path", default="image.jpg", type=str)
     parser.add_argument(
         "--log_level",
-        default="DEBUG",
+        default="WARNING",
         type=str,
         choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
     )
     parser.add_argument("--image_scale", default=30, type=int)
     parser.add_argument("--font", default="FONT_HERSHEY_SIMPLEX", type=str)
     parser.add_argument("--font_scale", default=0.4, type=float)
+    parser.add_argument("--image_root", default="images", type=str)
     args = parser.parse_args()
-    return args
-
-
-if __name__ == "__main__":
-    args = config()
-
-    log_level = getattr(logging, args.log_level)
-    logging.basicConfig(level=log_level)
-    pseudo_image_maker = PseudoImage(
-        args.image_scale,
-        args.font,
-        args.font_scale,
-    )
-    pseudo_image = pseudo_image_maker(args.src_path)
-    cv2.imwrite(args.dst_path, pseudo_image)
+    main(args)

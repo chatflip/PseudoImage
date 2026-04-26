@@ -1,73 +1,79 @@
-from __future__ import annotations
-
-import logging
-import os
+from pathlib import Path
+from typing import cast
 
 import cv2
 import numpy as np
 import numpy.typing as npt
+from loguru import logger
 
 
 class PseudoImage:
-    """Generates a pseudocolor image from a grayscale image."""
+    """Converts an image to a pseudo-color image with pixel values as text."""
 
     def __init__(
         self,
         image_scale: int = 30,
         font_str: str = "FONT_HERSHEY_SIMPLEX",
         font_scale: float = 0.4,
+        image_root: Path = Path("images"),
     ):
-        """Initializes the PseudoImage class.
+        """Initialize PseudoImage.
 
         Args:
-            image_scale (int, optional): The scale of the generated image.
-                Defaults to 30.
-            font_str (str, optional): The font type for the text.
-                Defaults to "FONT_HERSHEY_SIMPLEX".
-            font_scale (float, optional): The scale of the text.
-                Defaults to 0.4.
+            image_scale: Scale factor for the output image.
+            font_str: OpenCV font attribute name.
+            font_scale: Font scale for text rendering.
+            image_root: Root directory path for images.
         """
         self.image_scale = image_scale
         self.font_scale = font_scale
+        self.image_root = image_root
         self.font = getattr(cv2, font_str)
 
     def __call__(
-        self, src_path: str, target_channel: int = 0
-    ) -> npt.NDArray[np.uint8] | None:
-        """Generates a pseudocolor image from a grayscale image.
+        self, filename: str, target_channel: int = 0
+    ) -> tuple[npt.NDArray[np.uint8], npt.NDArray[np.uint8]] | None:
+        """Process an image file and generate its pseudo-color version.
 
         Args:
-            src_path (str): The path to the source image.
-            target_channel (int, optional):
-                The channel to use for the pseudocolor image.
-                Defaults to 0.
+            filename: Name of the image file to process.
+            target_channel: Color channel index to use for brightness.
 
         Returns:
-            npt.NDArray[np.uint8] | None: The pseudocolor image.
+            Tuple of (original image, pseudo image), or None if file not found.
         """
-        logging.info(f"Load path: {src_path}")
-        if not os.path.exists(src_path):
-            logging.error(f"No such file: {src_path}")
+        src_path = self.image_root / filename
+        logger.info(f"load path: {src_path}")
+        if not src_path.exists():
+            logger.error(f"no such file: {src_path}")
             return None
-        image = cv2.imread(src_path, cv2.IMREAD_ANYCOLOR)
-        logging.debug(f"src image shape: {image.shape}")
+        dst_path = src_path.with_stem(f"{src_path.stem}_pseudo").with_suffix(".png")
+        raw = cv2.imread(str(src_path), cv2.IMREAD_ANYCOLOR)
+        if raw is None:
+            logger.error(f"failed to read image: {src_path}")
+            return None
+        image = cast(npt.NDArray[np.uint8], raw)
+        logger.debug(f"src image shape: {image.shape}")
+
         pseudol_image = self.make_pseudol(image, target_channel)
-        logging.debug(f"dst image shape: {pseudol_image.shape}")
-        return pseudol_image
+        logger.info(f"dst path: {dst_path}")
+        logger.debug(f"dst image shape: {pseudol_image.shape}")
+        cv2.imwrite(str(dst_path), pseudol_image)
+        return image, pseudol_image
 
     def make_pseudol(
         self, image: npt.NDArray[np.uint8], target_channel: int
     ) -> npt.NDArray[np.uint8]:
-        """Generates a pseudocolor image from a grayscale image.
+        """Generate a pseudo-color image with pixel brightness values as text.
 
         Args:
-            image (npt.NDArray[np.uint8]): The source image.
-            target_channel (int): The channel to use for the pseudocolor image.
+            image: Input image array.
+            target_channel: Color channel index to use for brightness.
 
         Returns:
-            npt.NDArray[np.uint8]: The pseudocolor image.
+            Pseudo-color image with pixel values rendered as text.
         """
-        height, width, _ = image.shape
+        height, width = image.shape[:2]
         pseudol_shape = (self.image_scale * height, self.image_scale * width)
         pseudol_image = np.zeros(pseudol_shape, dtype=np.uint8)
         for y in range(height):
@@ -80,7 +86,7 @@ class PseudoImage:
                 put_color = 0 if brightness >= 127 else 255
                 text_poisition = (
                     x * self.image_scale,
-                    y * self.image_scale + int(self.image_scale / 2),
+                    y * self.image_scale + self.image_scale // 2,
                 )
                 cv2.putText(
                     pseudol_image,
@@ -91,5 +97,5 @@ class PseudoImage:
                     put_color,
                     1,
                     cv2.LINE_AA,
-                )  # type: ignore[call-overload]
+                )
         return pseudol_image
