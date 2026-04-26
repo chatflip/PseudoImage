@@ -1,20 +1,25 @@
-[tool.poetry]
+[project]
 name = "pseudoimage"
-version = "0.1.0"
+version = "0.0.0"
 description = ""
-authors = ["chatflip <oo.chat.flip@gmail.com>"]
+requires-python = "3.10"
+dependencies = [
+    "opencv-python>=4.6.0",
+]
+authors = [{ name = "chatflip", email = "oo.chat.flip@gmail.com" }]
 
-[tool.poetry.dependencies]
-python = "^3.8,<3.10"
-opencv-python = "^4.6.0"
+[dependency-groups]
+dev = [
+    "pysen>=0.10",
+    "black==21.10b0",
+    "flake8==4.0.1",
+    "isort==5.10.1",
+    "mypy==0.910",
+    "click==8.0.2",
+]
 
-[tool.poetry.dev-dependencies]
-pysen = "^0.10"
-black = "21.10b0"
-flake8 = "4.0.1"
-isort = "5.10.1"
-mypy = "0.910"
-click = "8.0.2"
+[tool.uv]
+package = false
 
 [tool.pysen]
 version = "0.10"
@@ -39,7 +44,7 @@ profile = "black"
 line_length = 88
 
 [tool.mypy]
-python_version = 3.8
+python_version = 3.9
 # following setting is same as pysen
 # https://github.com/pfnet/pysen/blob/main/setup.cfg#L12
 check_untyped_defs = true
@@ -62,7 +67,3 @@ warn_return_any = true
 warn_unreachable = true
 warn_unused_configs = true
 warn_unused_ignores = true
-
-[build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
