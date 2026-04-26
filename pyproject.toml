@@ -1,12 +1,12 @@
 [project]
 name = "pseudoimage"
 version = "0.0.0"
-description = ""
+description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "loguru>=0.7.3",
-    "opencv-python>=4.6.0",
+    "opencv-python>=4.13.0.92",
 ]
 
 [dependency-groups]
@@ -23,7 +23,6 @@ test = [
     "pytest",
     "pytest-cov",
 ] 
-
 
 [tool.uv]
 default-groups = []
