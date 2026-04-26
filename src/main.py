@@ -1,5 +1,8 @@
 import argparse
-import logging
+import sys
+from pathlib import Path
+
+from loguru import logger
 
 from PseudoImage import PseudoImage
 
@@ -10,14 +13,14 @@ def main(args: argparse.Namespace) -> None:
     Args:
         args: Parsed command-line arguments.
     """
-    log_level = getattr(logging, args.log_level)
-    logging.basicConfig(level=log_level)
+    logger.remove()
+    logger.add(sys.stderr, level=args.log_level)
 
     pseudo_image_maker = PseudoImage(
         args.image_scale,
         args.font,
         args.font_scale,
-        args.image_root,
+        Path(args.image_root),
     )
     pseudo_image_maker(args.image_path)
 
@@ -36,5 +39,4 @@ if __name__ == "__main__":
     parser.add_argument("--font_scale", default=0.4, type=float)
     parser.add_argument("--image_root", default="images", type=str)
     args = parser.parse_args()
-    print(type(args))
     main(args)

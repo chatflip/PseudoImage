@@ -1,10 +1,10 @@
-import logging
-import os
-from typing import Optional, cast
+from pathlib import Path
+from typing import cast
 
 import cv2
 import numpy as np
 import numpy.typing as npt
+from loguru import logger
 
 
 class PseudoImage:
@@ -15,7 +15,7 @@ class PseudoImage:
         image_scale: int = 30,
         font_str: str = "FONT_HERSHEY_SIMPLEX",
         font_scale: float = 0.4,
-        image_root: str = "images",
+        image_root: Path = Path("images"),
     ):
         """Initialize PseudoImage.
 
@@ -23,7 +23,7 @@ class PseudoImage:
             image_scale: Scale factor for the output image.
             font_str: OpenCV font attribute name.
             font_scale: Font scale for text rendering.
-            image_root: Root directory for images.
+            image_root: Root directory path for images.
         """
         self.image_scale = image_scale
         self.font_scale = font_scale
@@ -32,7 +32,7 @@ class PseudoImage:
 
     def __call__(
         self, filename: str, target_channel: int = 0
-    ) -> Optional[tuple[npt.NDArray[np.uint8], npt.NDArray[np.uint8]]]:
+    ) -> tuple[npt.NDArray[np.uint8], npt.NDArray[np.uint8]] | None:
         """Process an image file and generate its pseudo-color version.
 
         Args:
@@ -42,24 +42,23 @@ class PseudoImage:
         Returns:
             Tuple of (original image, pseudo image), or None if file not found.
         """
-        src_path = os.path.join(self.image_root, filename)
-        logging.info(f"load path: {src_path}")
-        if not os.path.exists(src_path):
-            logging.error(f"no such file: {src_path}")
+        src_path = self.image_root / filename
+        logger.info(f"load path: {src_path}")
+        if not src_path.exists():
+            logger.error(f"no such file: {src_path}")
             return None
-        name, _ = os.path.splitext(filename)
-        dst_path = os.path.join(self.image_root, f"{name}_pseudo.png")
-        raw = cv2.imread(src_path, cv2.IMREAD_ANYCOLOR)
+        dst_path = src_path.with_stem(f"{src_path.stem}_pseudo").with_suffix(".png")
+        raw = cv2.imread(str(src_path), cv2.IMREAD_ANYCOLOR)
         if raw is None:
-            logging.error(f"failed to read image: {src_path}")
+            logger.error(f"failed to read image: {src_path}")
             return None
         image = cast(npt.NDArray[np.uint8], raw)
-        logging.debug(f"src image shape: {image.shape}")
+        logger.debug(f"src image shape: {image.shape}")
 
         pseudol_image = self.make_pseudol(image, target_channel)
-        logging.info(f"dst path: {dst_path}")
-        logging.debug(f"dst image shape: {pseudol_image.shape}")
-        cv2.imwrite(dst_path, pseudol_image)
+        logger.info(f"dst path: {dst_path}")
+        logger.debug(f"dst image shape: {pseudol_image.shape}")
+        cv2.imwrite(str(dst_path), pseudol_image)
         return image, pseudol_image
 
     def make_pseudol(
@@ -74,7 +73,7 @@ class PseudoImage:
         Returns:
             Pseudo-color image with pixel values rendered as text.
         """
-        height, width, _ = image.shape
+        height, width = image.shape[:2]
         pseudol_shape = (self.image_scale * height, self.image_scale * width)
         pseudol_image = np.zeros(pseudol_shape, dtype=np.uint8)
         for y in range(height):
@@ -87,7 +86,7 @@ class PseudoImage:
                 put_color = 0 if brightness >= 127 else 255
                 text_poisition = (
                     x * self.image_scale,
-                    y * self.image_scale + int(self.image_scale / 2),
+                    y * self.image_scale + self.image_scale // 2,
                 )
                 cv2.putText(
                     pseudol_image,
